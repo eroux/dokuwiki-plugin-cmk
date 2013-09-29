@@ -1,0 +1,7 @@
+base   cmk
+author Elie Roux
+email  elie.roux@telecom-bretagne.eu
+date   2013-10-01
+name   Custom Markup plugin
+desc   Allow users to define high-level markups with per-rendering configuration
+url    https://github.com/eroux/dokuwiki-plugin-cmk
