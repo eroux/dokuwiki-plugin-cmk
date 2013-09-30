@@ -91,5 +91,4 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
         return true;
     }
 }
-}
 ?>
