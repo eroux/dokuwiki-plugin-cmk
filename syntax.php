@@ -30,12 +30,16 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
     /**
      * @return string Syntax mode type
      */
-//  public function getType() {
-//      return 'substition';
-//  }
+    public function getType() {
+      return 'formatting';
+    }
 
-	function getType(){ return 'formatting';}
-    function getAllowedTypes() { return array('formatting', 'substition', 'disabled'); }
+    /**
+     * @return array Allowed nested types
+     */
+    public function getAllowedTypes() {
+      return array('formatting', 'substition', 'disabled');
+    }
 
     /**
      * @return string Paragraph type
@@ -55,30 +59,30 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
 
     public function isSingleton() {
         return true;
-	}
+    }
 
     function loadConfig(){
-	  if ($this->configloaded) {return;}
-	  parent::loadConfig(); // fills $this->conf with usual dokuwiki plugin config 
-	  $nsbpc = $this->loadHelper('nsbpc');
+      if ($this->configloaded) {return;}
+      parent::loadConfig(); // fills $this->conf with usual dokuwiki plugin config 
+      $nsbpc = $this->loadHelper('nsbpc');
       $nsbpconf = $nsbpc->getConf($this->getPluginName(), getNS(cleanID(getID())));
-	  if ($this->conf) {
-	    $this->conf = array_replace($this->conf, $nsbpconf);
-	  } else {
+      if ($this->conf) {
+        $this->conf = array_replace($this->conf, $nsbpconf);
+      } else {
         $this->conf = $nsbpconf;
-	  }
-	}
+      }
+    }
 
     /**
-	 * Override default accepts() method to allow nesting
-	 * - ie, to get the plugin accepts its own entry syntax.
-	 *
-	 * Taken from Wrap plugin.
-	 */
-	function accepts($mode) {
-		if ($mode == 'plugin_cmk') return true;
-		  return parent::accepts($mode);
-		}
+   * Override default accepts() method to allow nesting
+   * - ie, to get the plugin accepts its own entry syntax.
+   *
+   * Taken from Wrap plugin.
+   */
+    function accepts($mode) {
+      if ($mode == 'plugin_cmk') return true;
+      return parent::accepts($mode);
+    }
 
 
     /**
@@ -87,18 +91,16 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      * @param string $mode Parser mode
      */
     public function connectTo($mode) {
-		$this->loadConfig();
-		foreach ($this->conf as $mk => $value)
-		  {
-            $this->Lexer->addEntryPattern('<'.$mk.'>(?=.*?</'.$mk.'>)',$mode,'plugin_cmk');
-		  }
+      $this->loadConfig();
+      foreach ($this->conf as $mk => $value) {
+        $this->Lexer->addEntryPattern('<'.$mk.'>(?=.*?</'.$mk.'>)',$mode,'plugin_cmk');
+      }
     }
 
     public function postConnect() {
-		foreach ($this->conf as $mk => $value)
-		  {
-            $this->Lexer->addExitPattern('</'.$mk.'>','plugin_cmk');
-		  }
+      foreach ($this->conf as $mk => $value) {
+        $this->Lexer->addExitPattern('</'.$mk.'>','plugin_cmk');
+      }
     }
 
     /**
@@ -109,36 +111,36 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      * @param int    $pos The position in the document
      * @param Doku_Handler    $handler The handler
      * @return array Data for the renderer
-	 *
-	 * This function exploits an extreme weirdness in the
-	 * Dokuwiki lexer: in the ENTER state, the $match string
-	 * seems to be empty, and it's considered to be
-	 * by PHP. The weird thing is that when you do
-	 * substr($match, 1, -1), it gives you a valid result...
-	 * This bug is just weird and I cannot explain it...
+   *
+   * This function exploits an extreme weirdness in the
+   * Dokuwiki lexer: in the ENTER state, the $match string
+   * seems to be empty, and it's considered to be
+   * by PHP. The weird thing is that when you do
+   * substr($match, 1, -1), it gives you a valid result...
+   * This bug is just weird and I cannot explain it...
      */
     public function handle($match, $state, $pos, &$handler){
-		$data = false;
-		switch ($state) {
-			case DOKU_LEXER_ENTER:
-			    $data = substr($match,1,-1);
-				break;
-			case DOKU_LEXER_UNMATCHED:
-			    // This is taken from Wrap. It allows nesting.
-				$handler->_addCall('cdata', array($match), $pos);
-				// in this case we don't need to return anything
-				// to the renderer, only cmk markups have meaning
-				// here...
-				return false;
-				break;
-			case DOKU_LEXER_EXIT:
-			    $data = substr($match,2,-1);
-				break;
-			default:
-				return false;
-				break;
-		}
-		return array($state, $data);
+      $data = false;
+      switch ($state) {
+        case DOKU_LEXER_ENTER:
+          $data = substr($match,1,-1);
+          break;
+        case DOKU_LEXER_UNMATCHED:
+          // This is taken from Wrap, to allow nesting.
+          $handler->_addCall('cdata', array($match), $pos);
+          // in this case we don't need to return anything
+          // to the renderer, only cmk markups have meaning
+          // here...
+          return false;
+          break;
+        case DOKU_LEXER_EXIT:
+          $data = substr($match,2,-1);
+          break;
+        default:
+          return false;
+          break;
+      }
+      return array($state, $data);
     }
 
     /**
@@ -150,8 +152,6 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      * @return bool If rendering was successful.
      */
     public function render($mode, &$renderer, $data) {
-	    print_r($data);
-		print('<br/>');
         if($mode != 'xhtml') return false;
         $renderer->doc .= $renderer->_xmlEntities($text);
         return true;
