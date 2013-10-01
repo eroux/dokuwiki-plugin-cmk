@@ -21,7 +21,7 @@
 
 NAME = cmk
 FILES = syntax.php README.md LICENSE plugin.info.txt
-DIRS = 
+DIRS = conf lang
 
 all : tgz zip
 
