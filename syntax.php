@@ -108,23 +108,23 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
     /**
      * This explodes config values for a particular rendering mode. For example
      * if we have 
-	 *    conf[xhtml][key] == "<span class='myclass'>:::</span>"
-	 * this function will change it to
-	 *    conf[xhtml][key] == array("<span class='myclass'>","</span>"
-	 *
-	 * We use a separate function for optimization: the work will be done only
-	 * once, for one rendering mode only. We cannot do it in loadConfig
-	 * because we don't know the rendering mode yet.
+     *    conf[xhtml][key] == "<span class='myclass'>:::</span>"
+     * this function will change it to
+     *    conf[xhtml][key] == array("<span class='myclass'>","</span>")
+     *
+     * We use a separate function for optimization: the work will be done only
+     * once, for one rendering mode only. We cannot do it in loadConfig
+     * because we don't know the rendering mode yet.
      */
-	function explodeConfig($mode)
-	{
+    function explodeConfig($mode)
+    {
       if (is_array($this->conf[$mode])) {
-	    $conf = &$this->conf[$mode];
-	    foreach ($conf	as $key=>$value) {
+        $conf = &$this->conf[$mode];
+        foreach ($conf    as $key=>$value) {
           $conf[$key] = explode(':::', $value);
-		}
-	  }
-	}
+        }
+      }
+    }
     /**
      * Override default accepts() method to allow nesting
      * - ie, to get the plugin accepts its own entry syntax.
@@ -194,7 +194,7 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
     /**
      * same as $this->configloaded but for use with explodeConfig
      */
-	var $configexploded = false;
+    var $configexploded = false;
     /**
      * Renderer
      *
@@ -206,16 +206,16 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
     public function render($mode, &$renderer, $data) {
       if (empty($data)) return false;
       if(!in_array($mode,$this->allowed_rendering_modes)){
-	    return false;
-	  }
-	  if (!$this->configexploded) {
-	    $this->explodeConfig($mode);
-	    $this->configexploded = true;
-	  }
-	  $conf = &$this->conf[$mode];
+        return false;
+      }
+      if (!$this->configexploded) {
+        $this->explodeConfig($mode);
+        $this->configexploded = true;
+      }
+      $conf = &$this->conf[$mode];
       list($state, $markup) = $data;
-	  if (!is_array($conf) || empty($conf[$markup])) {
-	    return false;
+      if (!is_array($conf) || empty($conf[$markup])) {
+        return false;
       }
       switch ($state) {
         case DOKU_LEXER_ENTER:
@@ -224,8 +224,8 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
         case DOKU_LEXER_EXIT:
           $renderer->doc .= $conf[$markup][1];
           break;
-		default:
-		  break;
+        default:
+          break;
       }
       return true;
     }
