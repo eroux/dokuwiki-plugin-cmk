@@ -20,3 +20,5 @@
  *
  */
 $conf['allowed_rendering_modes'] = array('xhtml');
+$conf['xhtml'] = array();
+$conf['xhtml']['mymarkup'] = "<span class='myclass'>:::</span>";

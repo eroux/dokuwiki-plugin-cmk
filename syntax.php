@@ -65,7 +65,7 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      * list contains only 'xhtml'. Currently, the only available rendering mode
      * that supports cmk is texit.
      */
-    allowed_rendering_modes = $this->getConf('allowed_rendering_modes');
+    var $allowed_rendering_modes;
     /**
      * Override loadConfig() in order to get usual plugin config + nsbpc.
      *
@@ -87,11 +87,12 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
     function loadConfig(){
       if ($this->configloaded) {return;}
       parent::loadConfig(); // fills $this->conf with usual plugin config 
+      $this->allowed_rendering_modes = $this->getConf('allowed_rendering_modes');
       $nsbpc = $this->loadHelper('nsbpc');
       $currentns = getNS(cleanID(getID()));
       $this->conf['list'] = array(); // the list of all possible arrays.
       foreach ($this->allowed_rendering_modes as $rmode) {
-        $nsbpconf = $nsbpc->getConf($this->getPluginName().$rmode, $currentns);
+        $nsbpconf = $nsbpc->getConf($this->getPluginName().'-'.$rmode, $currentns);
         if ($this->conf[$rmode]) {
           $this->conf[$rmode] = array_replace($this->conf[$rmode], $nsbpconf);
         } else {
@@ -100,7 +101,7 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
         // in order to fill mklist in an efficient way, we first make it the
         // concatenation of all conf tables (this will give an array with the
         // values we want as keys), then we just have to array_keys() it...
-        array_replace($this->conf['list'], $this->conf);
+        $this->conf['list'] = array_replace($this->conf['list'], $this->conf[$rmode]);
       }
       $this->conf['list'] = array_keys($this->conf['list']);
     }
