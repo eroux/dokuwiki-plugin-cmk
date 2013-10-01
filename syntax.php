@@ -33,14 +33,12 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
     public function getType() {
       return 'formatting';
     }
-
     /**
      * @return array Allowed nested types
      */
     public function getAllowedTypes() {
       return array('formatting', 'substition', 'disabled');
     }
-
     /**
      * @return string Paragraph type
      */
@@ -56,35 +54,66 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
     public function getSort() {
         return 55;
     }
-
+    /**
+     * Seems to be the default, but it's particularly important with NSBPC.
+     */
     public function isSingleton() {
         return true;
     }
-
+    /**
+     * A list of dokuwiki rendering modes that support cmk. By default, this
+     * list contains only 'xhtml'. Currently, the only available rendering mode
+     * that supports cmk is texit.
+     */
+    allowed_rendering_modes = $this->getConf('allowed_rendering_modes');
+    /**
+     * Override loadConfig() in order to get usual plugin config + nsbpc.
+     *
+     * This sets $this->conf to a table organized this way:
+     *   - ['list']: the list of all possible markups, in all rendering modes. 
+     *               It is useful as, in the Lexer, we don't know rendering mode
+     *               yet, so we have to parse all possible markups.
+     *   - ['xhtml']: an associative array with xhtml markup as keys and their
+     *                replacement as values.
+     *   - ['rmode1']: idem for rmode rendering mode 1 (texit for example).
+     *   - etc.
+     *
+     * Please note that the configuration in conf/ directory must have the same
+     * structure (see the example in the plugin zip).
+     *
+     * Note also that the 'list' element of the array prevents a rendering mode
+     * with this name...
+     */
     function loadConfig(){
       if ($this->configloaded) {return;}
-      parent::loadConfig(); // fills $this->conf with usual dokuwiki plugin config 
+      parent::loadConfig(); // fills $this->conf with usual plugin config 
       $nsbpc = $this->loadHelper('nsbpc');
-      $nsbpconf = $nsbpc->getConf($this->getPluginName(), getNS(cleanID(getID())));
-      if ($this->conf) {
-        $this->conf = array_replace($this->conf, $nsbpconf);
-      } else {
-        $this->conf = $nsbpconf;
+      $currentns = getNS(cleanID(getID()));
+      $this->conf['list'] = array(); // the list of all possible arrays.
+      foreach ($this->allowed_rendering_modes as $rmode) {
+        $nsbpconf = $nsbpc->getConf($this->getPluginName().$rmode, $currentns);
+        if ($this->conf[$rmode]) {
+          $this->conf[$rmode] = array_replace($this->conf[$rmode], $nsbpconf);
+        } else {
+          $this->conf[$rmode] = $nsbpconf;
+        }
+        // in order to fill mklist in an efficient way, we first make it the
+        // concatenation of all conf tables (this will give an array with the
+        // values we want as keys), then we just have to array_keys() it...
+        array_replace($this->conf['list'], $this->conf);
       }
+      $this->conf['list'] = array_keys($this->conf['list']);
     }
-
     /**
-   * Override default accepts() method to allow nesting
-   * - ie, to get the plugin accepts its own entry syntax.
-   *
-   * Taken from Wrap plugin.
-   */
+     * Override default accepts() method to allow nesting
+     * - ie, to get the plugin accepts its own entry syntax.
+     *
+     * Taken from Wrap plugin.
+     */
     function accepts($mode) {
       if ($mode == 'plugin_cmk') return true;
       return parent::accepts($mode);
     }
-
-
     /**
      * Connect lookup pattern to lexer.
      *
@@ -92,17 +121,16 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      */
     public function connectTo($mode) {
       $this->loadConfig();
-      foreach ($this->conf as $mk => $value) {
-        $this->Lexer->addEntryPattern('<'.$mk.'>(?=.*?</'.$mk.'>)',$mode,'plugin_cmk');
+      foreach ($this->conf['list'] as $mk) {
+        $this->Lexer->addEntryPattern('<'.$mk.'>(?=.*?</'.$mk.'>)',$mode,
+          'plugin_cmk');
       }
     }
-
     public function postConnect() {
-      foreach ($this->conf as $mk => $value) {
+      foreach ($this->conf['list'] as $mk) {
         $this->Lexer->addExitPattern('</'.$mk.'>','plugin_cmk');
       }
     }
-
     /**
      * Handle matches of the cmk syntax
      *
@@ -111,13 +139,13 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      * @param int    $pos The position in the document
      * @param Doku_Handler    $handler The handler
      * @return array Data for the renderer
-   *
-   * This function exploits an extreme weirdness in the
-   * Dokuwiki lexer: in the ENTER state, the $match string
-   * seems to be empty, and it's considered to be
-   * by PHP. The weird thing is that when you do
-   * substr($match, 1, -1), it gives you a valid result...
-   * This bug is just weird and I cannot explain it...
+     *
+     * This function exploits an extreme weirdness in the
+     * Dokuwiki lexer: in the ENTER state, the $match string
+     * seems to be empty, and it's considered to be
+     * by PHP. The weird thing is that when you do
+     * substr($match, 1, -1), it gives you a valid result...
+     * This bug is just weird and I cannot explain it...
      */
     public function handle($match, $state, $pos, &$handler){
       $data = false;
@@ -142,7 +170,6 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
       }
       return array($state, $data);
     }
-
     /**
      * Render xhtml output or metadata
      *
