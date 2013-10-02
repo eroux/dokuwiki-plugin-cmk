@@ -86,7 +86,18 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      */
     function loadConfig(){
       if ($this->configloaded) {return;}
-      parent::loadConfig(); // fills $this->conf with usual plugin config 
+      parent::loadConfig(); // fills $this->conf with usual plugin config,
+	  // shouldn't be usefule here, but who knows...
+	  // Now we have to check and parseconf/cmk.ini in the plugin directory
+	  $defaultconffilename = DOKU_PLUGIN.'cmk/conf/cmk.ini';
+	  if (is_readable($defaultconffilename)) {
+	    $defaultconf = parse_ini_file($defaultconffilename, true);
+        if (is_array($this->conf)) {
+		  $this->conf = array_replace($defaultconf, $this->conf);
+		} else {
+          $this->conf = $defaultconf;
+		}
+	  }
       $nsbpc = $this->loadHelper('nsbpc');
       $currentns = getNS(cleanID(getID()));
       $nsbpconf = $nsbpc->getConf($this->getPluginName(), $currentns, true);
@@ -110,6 +121,7 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
                                             $this->conf[$mode]);
       }
       $this->conf['list'] = array_keys($this->conf['list']);
+	  print_r($this->conf);
     }
     /**
      * This explodes config values for a particular rendering mode. For example
