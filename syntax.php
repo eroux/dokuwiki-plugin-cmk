@@ -185,6 +185,7 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      * by PHP. The weird thing is that when you do
      * substr($match, 1, -1), it gives you a valid result...
      * This bug is just weird and I cannot explain it...
+     * See https://bugs.dokuwiki.org/index.php?do=details&task_id=2859
      */
     public function handle($match, $state, $pos, &$handler){
       $data = false;
