@@ -87,21 +87,27 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
     function loadConfig(){
       if ($this->configloaded) {return;}
       parent::loadConfig(); // fills $this->conf with usual plugin config 
-      $this->allowed_rendering_modes = $this->getConf('allowed_rendering_modes');
       $nsbpc = $this->loadHelper('nsbpc');
       $currentns = getNS(cleanID(getID()));
+      $nsbpconf = $nsbpc->getConf($this->getPluginName(), $currentns, true);
       $this->conf['list'] = array(); // the list of all possible arrays.
-      foreach ($this->allowed_rendering_modes as $rmode) {
-        $nsbpconf = $nsbpc->getConf($this->getPluginName().'-'.$rmode, $currentns);
-        if ($this->conf[$rmode]) {
-          $this->conf[$rmode] = array_replace($this->conf[$rmode], $nsbpconf);
+      foreach ($nsbpconf as $mode => $markups) {
+        if (!is_array($markups) ||
+             ($this->conf[$mode] && !is_array($this->conf[$mode]))) {
+          // we should raise a warning here, but I don't see any error reporting
+          // mechanism in dokuwiki...
+          continue;
+        }
+        if ($this->conf[$mode]) {
+          $this->conf[$mode] = array_replace($this->conf[$mode], $markups);
         } else {
-          $this->conf[$rmode] = $nsbpconf;
+          $this->conf[$mode] = $markups;
         }
         // in order to fill mklist in an efficient way, we first make it the
         // concatenation of all conf tables (this will give an array with the
         // values we want as keys), then we just have to array_keys() it...
-        $this->conf['list'] = array_replace($this->conf['list'], $this->conf[$rmode]);
+        $this->conf['list'] = array_replace($this->conf['list'],
+                                            $this->conf[$mode]);
       }
       $this->conf['list'] = array_keys($this->conf['list']);
     }
@@ -198,7 +204,7 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
     /**
      * Renderer
      *
-     * @param string         $mode      Renderer mode (supported modes: xhtml)
+     * @param string         $mode      Renderer mode (supported modes: all)
      * @param Doku_Renderer  $renderer  The renderer
      * @param array          $data      The data from the handler() function
      * @return bool If rendering was successful.
