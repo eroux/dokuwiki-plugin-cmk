@@ -1,10 +1,10 @@
 ## Custom Markups for Dokuwiki
 
-This plugin is a very simple and direct way to create your own markups in Dokuwiki. The idea is to input semantic data instead of redering data, and then to choose the redering in the different rendering modes of Dokuwiki. This plugin allows you to define arbitrary custom markups, with no constraints, so that you have to check the availability and the potential conflicts of your markups.
+This plugin is a very simple and direct way to create your own markups in Dokuwiki. The idea is to input semantic data instead of rendering data, and then to choose the rendering in the different rendering modes of Dokuwiki. This plugin allows you to define arbitrary custom markups, with no constraints, so that you have to check the availability and the potential conflicts of your markups.
 
 ### Configuration format
 
-For simplicity and straightforwarness goals, this plugin uses config files with [php.net](ini syntax), just like [nbspc], with which it is compatible.
+For simplicity and straightforwardness goals, this plugin uses config files with [php.net](ini syntax), just like [nbspc], with which it is compatible.
 A cmk config file looks like this (see also the [example](example)):
 
 ```ini
@@ -13,7 +13,7 @@ mymarkup = <span class="mymarkup">:::</span>
 ```
 
 Let's explain this:
- * the `[xhtml]` first line is a section in the configuration, telling the redering mode for which the following config lines will apply. See next section for details.
+ * the `[xhtml]` first line is a section in the configuration, telling the rendering mode for which the following config lines will apply. See next section for details.
  * the second line indicates the configuration for the markup *mymarkup*. The `:::` delimits what will be the replacement for `<mymarkup>` and the replacement for `</mymarkup>` in the page.
 
 So with this example, when dokuwiki will encounter
@@ -38,7 +38,7 @@ The plugin has a very high priority (55) in the [priorities](syntax priorities),
 
 ### Other rendering modes
 
-*xhtml* is the default rendering mode of Dokuwiki, the one used when a page is displayed. Other redering modes are set up by plugins, for instance [texit] for PDF export through LaTeX. If you want to add a meaning for your markups in another rendering mode, you can simply add a section in your config files for it. For instance:
+*xhtml* is the default rendering mode of Dokuwiki, the one used when a page is displayed. Other rendering modes are set up by plugins, for instance [texit] for PDF export through LaTeX. If you want to add a meaning for your markups in another rendering mode, you can simply add a section in your config files for it. For instance:
 
 ```ini
 [xhtml]
