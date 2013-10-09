@@ -9,7 +9,7 @@ A cmk config file looks like this (see also the [example](example)):
 
 ```ini
 [xhtml]
-mymarkup = <span class="mymarkup">:::</span>
+mymarkup = "<span class='mymarkup'>:::</span>"
 ```
 
 Let's explain this:
@@ -42,7 +42,7 @@ The plugin has a very high priority (55) in the [priorities](syntax priorities),
 
 ```ini
 [xhtml]
-mymarkup = <span class="mymarkup">:::</span>
+mymarkup = "<span class='mymarkup'>:::</span>"
 
 [texit]
 mymarkup = \mytexmacro{:::}
@@ -63,10 +63,6 @@ This plugin is very simple and should work with any version of Dokuwiki. A bug h
 ### License
 
 This plugin is licensed under the GPLv2+ license.
-
-### TODO
-
- - file bugreport against Dokuwiki
 
 [php.net]: http://php.net/manual/fr/function.parse-ini-file.php
 [nbspc]: https://github.com/eroux/dokuwiki-plugin-cmk
