@@ -61,12 +61,6 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
         return true;
     }
     /**
-     * A list of dokuwiki rendering modes that support cmk. By default, this
-     * list contains only 'xhtml'. Currently, the only available rendering mode
-     * that supports cmk is texit.
-     */
-    var $allowed_rendering_modes;
-    /**
      * Override loadConfig() in order to get usual plugin config + nsbpc.
      *
      * This sets $this->conf to a table organized this way:
@@ -121,7 +115,6 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
                                             $this->conf[$mode]);
       }
       $this->conf['list'] = array_keys($this->conf['list']);
-	  print_r($this->conf);
     }
     /**
      * This explodes config values for a particular rendering mode. For example
@@ -178,14 +171,6 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      * @param int    $pos The position in the document
      * @param Doku_Handler    $handler The handler
      * @return array Data for the renderer
-     *
-     * This function exploits an extreme weirdness in the
-     * Dokuwiki lexer: in the ENTER state, the $match string
-     * seems to be empty, and it's considered to be
-     * by PHP. The weird thing is that when you do
-     * substr($match, 1, -1), it gives you a valid result...
-     * This bug is just weird and I cannot explain it...
-     * See https://bugs.dokuwiki.org/index.php?do=details&task_id=2859
      */
     public function handle($match, $state, $pos, &$handler){
       $data = false;
@@ -224,14 +209,11 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      */
     public function render($mode, &$renderer, $data) {
       if (empty($data)) return false;
-      if(!in_array($mode,$this->allowed_rendering_modes)){
-        return false;
-      }
       if (!$this->configexploded) {
         $this->explodeConfig($mode);
         $this->configexploded = true;
       }
-      $conf = &$this->conf[$mode];
+      $conf = $this->conf[$mode];
       list($state, $markup) = $data;
       if (!is_array($conf) || empty($conf[$markup])) {
         return false;
