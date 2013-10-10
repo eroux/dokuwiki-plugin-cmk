@@ -115,7 +115,8 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
                                             $this->conf[$mode]);
       }
       $this->conf['list'] = array_keys($this->conf['list']);
-    }
+      $this->explodeConfig();
+	}
     /**
      * This explodes config values for a particular rendering mode. For example
      * if we have 
@@ -123,18 +124,15 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      * this function will change it to
      *    conf[xhtml][key] == array("<span class='myclass'>","</span>")
      *
-     * We use a separate function for optimization: the work will be done only
-     * once, for one rendering mode only. We cannot do it in loadConfig
-     * because we don't know the rendering mode yet.
      */
-    function explodeConfig($mode)
-    {
-      if (is_array($this->conf[$mode])) {
-        $conf = &$this->conf[$mode];
-        foreach ($conf    as $key=>$value) {
-          $conf[$key] = explode(':::', $value);
+    function explodeConfig() {
+	  foreach ($this->conf as $mode => $keyvals) {
+        if (is_array($keyvals) && $mode != "list") {
+          foreach ($keyvals as $key=>$value) {
+            $this->conf[$mode][$key] = explode(':::', $value);
+          }
         }
-      }
+	  }
     }
     /**
      * Override default accepts() method to allow nesting
@@ -196,10 +194,6 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
       return array($state, $data);
     }
     /**
-     * same as $this->configloaded but for use with explodeConfig
-     */
-    var $configexploded = false;
-    /**
      * Renderer
      *
      * @param string         $mode      Renderer mode (supported modes: all)
@@ -209,10 +203,6 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      */
     public function render($mode, &$renderer, $data) {
       if (empty($data)) return false;
-      if (!$this->configexploded) {
-        $this->explodeConfig($mode);
-        $this->configexploded = true;
-      }
       $conf = $this->conf[$mode];
       list($state, $markup) = $data;
       if (!is_array($conf) || empty($conf[$markup])) {
