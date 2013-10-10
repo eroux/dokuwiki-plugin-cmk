@@ -44,11 +44,11 @@ The plugin has a very high priority (55) in the [priorities](syntax priorities),
 [xhtml]
 mymarkup = "<span class='mymarkup'>:::</span>"
 
-[texit]
+[latex]
 mymarkup = \mytexmacro{:::}
 ```
 
-to map *mymarkup* to *mytexmacro* in TeX.
+to map *mymarkup* to *mytexmacro* in TeX. Note that the sections in the ini file must be called `latex`, because it is the name of the render mode of `texit`.
 
 ### Limitations
 
