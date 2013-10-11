@@ -52,9 +52,9 @@ to map *mymarkup* to *mytexmacro* in TeX. Note that the sections in the ini file
 
 ### Limitations
 
-Please see [php.net] for the limitations of the `parse_ini_files` function according to your version of PHP. It should work well with PHP >= 5.3.
-
-Note that the only supported markups are opening/closing markups (`<mymarkup>foo</mymarkup>`), not singles ones (`<mymarkup/>`).
+  * see [php.net] (especially the [notes]) for the limitations of the `parse_ini_files` function according to your version of PHP. It should work well with PHP >= 5.3.
+  * the only supported markups are opening/closing markups (`<mymarkup>foo</mymarkup>`), not singles ones (`<mymarkup/>`).
+  * caching is not well handled yet: cache won't be recompiled if you change cmk's configuration without changing the page itself (see TODO section of nsbpc's README).
 
 ### Requirements
 
@@ -65,6 +65,7 @@ This plugin is very simple and should work with any version of Dokuwiki. A bug h
 This plugin is licensed under the GPLv2+ license.
 
 [php.net]: http://php.net/manual/fr/function.parse-ini-file.php
+[notes]:http://php.net/manual/fr/function.parse-ini-file.php#refsect1-function.parse-ini-file-notes
 [nbspc]: https://github.com/eroux/dokuwiki-plugin-cmk
 [texit]: https://github.com/eroux/dokuwiki-plugin-dokutexit
 [priorities]:https://www.dokuwiki.org/devel:parser:getsort_list
