@@ -31,19 +31,7 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      * @return string Syntax mode type
      */
     public function getType() {
-      return 'formatting';
-    }
-    /**
-     * @return array Allowed nested types
-     */
-    public function getAllowedTypes() {
-      return array('formatting', 'substition', 'disabled');
-    }
-    /**
-     * @return string Paragraph type
-     */
-    public function getPType() {
-        return 'normal';
+      return 'substition';
     }
     /**
      * @return int Sort order - Low numbers go before high numbers
@@ -53,6 +41,12 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      */
     public function getSort() {
         return 55;
+    }
+    /**
+     * @return string Syntax mode type
+     */
+    public function getPType() {
+      return 'normal';
     }
     /**
      * Seems to be the default, but it's particularly important with NSBPC.
@@ -81,17 +75,17 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
     function loadConfig(){
       if ($this->configloaded) {return;}
       parent::loadConfig(); // fills $this->conf with usual plugin config,
-	  // shouldn't be usefule here, but who knows...
-	  // Now we have to check and parseconf/cmk.ini in the plugin directory
-	  $defaultconffilename = DOKU_PLUGIN.'cmk/conf/cmk.ini';
-	  if (is_readable($defaultconffilename)) {
-	    $defaultconf = parse_ini_file($defaultconffilename, true);
+      // shouldn't be usefule here, but who knows...
+      // Now we have to check and parseconf/cmk.ini in the plugin directory
+      $defaultconffilename = DOKU_PLUGIN.'cmk/conf/cmk.ini';
+      if (is_readable($defaultconffilename)) {
+        $defaultconf = parse_ini_file($defaultconffilename, true);
         if (is_array($this->conf)) {
-		  $this->conf = array_replace($defaultconf, $this->conf);
-		} else {
+          $this->conf = array_replace($defaultconf, $this->conf);
+        } else {
           $this->conf = $defaultconf;
-		}
-	  }
+        }
+      }
       $nsbpc = $this->loadHelper('nsbpc');
       $currentns = getNS(cleanID(getID()));
       $nsbpconf = $nsbpc->getConf($this->getPluginName(), $currentns, true);
@@ -116,7 +110,7 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
       }
       $this->conf['list'] = array_keys($this->conf['list']);
       $this->explodeConfig();
-	}
+    }
     /**
      * This explodes config values for a particular rendering mode. For example
      * if we have 
@@ -126,23 +120,13 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      *
      */
     function explodeConfig() {
-	  foreach ($this->conf as $mode => $keyvals) {
+      foreach ($this->conf as $mode => $keyvals) {
         if (is_array($keyvals) && $mode != "list") {
           foreach ($keyvals as $key=>$value) {
             $this->conf[$mode][$key] = explode(':::', $value);
           }
         }
-	  }
-    }
-    /**
-     * Override default accepts() method to allow nesting
-     * - ie, to get the plugin accepts its own entry syntax.
-     *
-     * Taken from Wrap plugin.
-     */
-    function accepts($mode) {
-      if ($mode == 'plugin_cmk') return true;
-      return parent::accepts($mode);
+      }
     }
     /**
      * Connect lookup pattern to lexer.
@@ -152,13 +136,8 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
     public function connectTo($mode) {
       $this->loadConfig();
       foreach ($this->conf['list'] as $mk) {
-        $this->Lexer->addEntryPattern('<'.$mk.'>(?=.*?</'.$mk.'>)',$mode,
+        $this->Lexer->addSpecialPattern('</?'.$mk.'>',$mode,
           'plugin_cmk');
-      }
-    }
-    public function postConnect() {
-      foreach ($this->conf['list'] as $mk) {
-        $this->Lexer->addExitPattern('</'.$mk.'>','plugin_cmk');
       }
     }
     /**
@@ -171,26 +150,15 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      * @return array Data for the renderer
      */
     public function handle($match, $state, $pos, &$handler){
-      $data = false;
-      switch ($state) {
-        case DOKU_LEXER_ENTER:
-          $data = substr($match,1,-1);
-          break;
-        case DOKU_LEXER_UNMATCHED:
-          // This is taken from Wrap, to allow nesting.
-          $handler->_addCall('cdata', array($match), $pos);
-          // in this case we don't need to return anything
-          // to the renderer, only cmk markups have meaning
-          // here...
-          return false;
-          break;
-        case DOKU_LEXER_EXIT:
-          $data = substr($match,2,-1);
-          break;
-        default:
-          return false;
-          break;
-      }
+	  // data here is whether "mymarkup" or "/mymarkup"
+	  // so we set $state and $data accordingly, and return it.
+      if ($match[1] == '/') {
+        $state = 1; // 1 is on <markup>, 0 on </mymarkup>
+        $data = substr($match,2,-1);
+	  } else {
+        $data = substr($match,1,-1);
+        $state = 0;
+	  }
       return array($state, $data);
     }
     /**
@@ -209,10 +177,10 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
         return false;
       }
       switch ($state) {
-        case DOKU_LEXER_ENTER:
+        case 0:
           $renderer->doc .= $conf[$markup][0];
           break;
-        case DOKU_LEXER_EXIT:
+        case 1:
           $renderer->doc .= $conf[$markup][1];
           break;
         default:

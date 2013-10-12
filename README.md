@@ -55,6 +55,8 @@ to map *mymarkup* to *mytexmacro* in TeX. Note that the sections in the ini file
   * see [php.net] (especially the [notes]) for the limitations of the `parse_ini_files` function according to your version of PHP. It should work well with PHP >= 5.3.
   * the only supported markups are opening/closing markups (`<mymarkup>foo</mymarkup>`), not singles ones (`<mymarkup/>`).
   * caching is not well handled yet: cache won't be recompiled if you change cmk's configuration without changing the page itself (see TODO section of nsbpc's README).
+  * text inbetween cmk markups will be interpreted by other plugins and dokuwiki, but you cannot replace cmk markups by other plugin's markups, nor base dokuwiki syntax. To do so, the plugin would need a small rewriting into an action plugin, see [this mail][mail].
+  * an empty line before cmk markups will be interpreted as `<p>` and thus might break things if your markups are mapped to `div`s. This is due to a limitation of the Dokuwiki syntax plugins of type *substitution*, which lack the `getPType()` function.
 
 ### Requirements
 
@@ -71,3 +73,4 @@ This plugin is licensed under the GPLv2+ license.
 [priorities]:https://www.dokuwiki.org/devel:parser:getsort_list
 [wrap]:https://www.dokuwiki.org/plugin:wrap
 [syntax.php]:https://github.com/eroux/dokuwiki-plugin-cmk/blob/master/syntax.php
+[mail]:http://www.freelists.org/post/dokuwiki/plugin-recursive-syntax-substitution,1
