@@ -150,15 +150,26 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      * @return array Data for the renderer
      */
     public function handle($match, $state, $pos, &$handler){
-	  // data here is whether "mymarkup" or "/mymarkup"
-	  // so we set $state and $data accordingly, and return it.
+      // data here is whether "mymarkup" or "/mymarkup"
+      // so we set $state and $data accordingly, and return it.
+      $mk = false;
       if ($match[1] == '/') {
         $state = 1; // 1 is on <markup>, 0 on </mymarkup>
-        $data = substr($match,2,-1);
-	  } else {
-        $data = substr($match,1,-1);
+        $mk = substr($match,2,-1);
+      } else {
+        $mk = substr($match,1,-1);
         $state = 0;
-	  }
+      }
+      $data = array();
+      foreach ($this->conf as $mode=>$markups)
+        {
+          if ($mode != 'list' && is_array($markups)) {
+            $data[$mode] = $markups[$mk];
+          }
+        }
+      if (empty($data)) {
+        return false;
+      }
       return array($state, $data);
     }
     /**
@@ -171,21 +182,11 @@ class syntax_plugin_cmk extends DokuWiki_Syntax_Plugin {
      */
     public function render($mode, &$renderer, $data) {
       if (empty($data)) return false;
-      $conf = $this->conf[$mode];
-      list($state, $markup) = $data;
-      if (!is_array($conf) || empty($conf[$markup])) {
+      list($state, $replacements) = $data;
+      if (empty($replacements[$mode])) {
         return false;
       }
-      switch ($state) {
-        case 0:
-          $renderer->doc .= $conf[$markup][0];
-          break;
-        case 1:
-          $renderer->doc .= $conf[$markup][1];
-          break;
-        default:
-          break;
-      }
+      $renderer->doc .= $replacements[$mode][$state];
       return true;
     }
 }
